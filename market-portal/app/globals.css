@@ -1,0 +1,757 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --fs-bg: #030303;
+  --fs-surface: rgba(16, 16, 18, 0.92);
+  --fs-border: rgba(239, 68, 68, 0.22);
+  --fs-muted: #9ca3af;
+  --fs-accent: #f87171;
+  --fs-accent-dim: #b91c1c;
+  --fs-glow: rgba(239, 68, 68, 0.45);
+  --fs-shadow-glow-sm: 0 0 24px -6px rgba(239, 68, 68, 0.25);
+  --fs-shadow-glow: 0 0 40px -8px rgba(239, 68, 68, 0.35);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  color: #f4f4f5;
+  background: var(--fs-bg);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(185, 28, 28, 0.45);
+  color: #fef2f2;
+}
+
+/* 轻扫描线（装饰） */
+.fs-scanline::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(255, 255, 255, 0) 48%,
+    rgba(239, 68, 68, 0.03) 50%,
+    rgba(255, 255, 255, 0) 52%
+  );
+  background-size: 100% 6px;
+  animation: fs-scan-y 9s linear infinite;
+  opacity: 0.72;
+}
+
+@keyframes fs-scan-y {
+  0% {
+    background-position: 0 -20vh;
+  }
+  100% {
+    background-position: 0 120vh;
+  }
+}
+
+@keyframes fs-grid-drift {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 48px 48px, 48px 48px;
+  }
+}
+
+@keyframes fs-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fs-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes fs-orb {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(3%, 2%) scale(1.05);
+    opacity: 0.5;
+  }
+}
+
+@keyframes fs-shimmer-slide {
+  0% {
+    background-position: -120% 0;
+  }
+  100% {
+    background-position: 220% 0;
+  }
+}
+
+@keyframes fs-header-down {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fs-main-fade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fs-card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fs-th-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fs-toolbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fs-h1-gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes fs-kicker-breathe {
+  0%,
+  100% {
+    opacity: 0.88;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes fs-dot-glow {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 12px rgba(248, 113, 113, 0.45);
+  }
+  50% {
+    transform: scale(1.15);
+    box-shadow: 0 0 18px rgba(248, 113, 113, 0.65);
+  }
+}
+
+@keyframes fs-li-stagger {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@layer components {
+  .fs-shell {
+    @apply min-h-screen;
+    background:
+      radial-gradient(ellipse 100% 70% at 50% -15%, rgba(185, 28, 28, 0.14), transparent 50%),
+      radial-gradient(ellipse 60% 45% at 100% 30%, rgba(63, 63, 70, 0.2), transparent 45%),
+      linear-gradient(180deg, #080808 0%, var(--fs-bg) 45%);
+  }
+
+  .fs-grid-bg {
+    background-image: linear-gradient(rgba(239, 68, 68, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(239, 68, 68, 0.055) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 75% 65% at 50% 5%, black 20%, transparent 72%);
+    animation: fs-grid-drift 38s linear infinite;
+  }
+
+  .fs-ambient {
+    @apply pointer-events-none fixed inset-0 -z-[5] overflow-hidden;
+  }
+
+  .fs-ambient-orb {
+    @apply absolute rounded-full blur-[100px];
+    animation: fs-orb 18s ease-in-out infinite;
+  }
+
+  /** 顶栏、主内容首屏入场 */
+  .fs-header-enter {
+    animation: fs-header-down 0.58s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .fs-nav-enter {
+    animation: fs-toolbar-in 0.48s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+  }
+
+  .fs-main-enter {
+    animation: fs-main-fade 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+  }
+
+  /** 大面板整块抬起（目录表、检索表单等） */
+  .fs-panel-rise {
+    animation: fs-card-rise 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .fs-panel {
+    @apply rounded-2xl border border-zinc-800/90 bg-zinc-950/55 shadow-xl shadow-black/50 backdrop-blur-md transition-[border-color,box-shadow,transform] duration-300;
+  }
+
+  .fs-panel-interactive {
+    @apply fs-panel;
+  }
+
+  .fs-panel-interactive:hover {
+    border-color: rgba(127, 29, 29, 0.4);
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.45),
+      var(--fs-shadow-glow-sm);
+  }
+
+  .fs-panel-inner {
+    @apply rounded-xl border border-zinc-800/60 bg-zinc-950/35 transition-[border-color,background-color] duration-200;
+  }
+
+  .fs-panel-inner:hover {
+    @apply border-red-900/35 bg-red-950/[0.07];
+  }
+
+  .fs-h1 {
+    @apply text-2xl font-semibold tracking-tight text-white sm:text-3xl;
+  }
+
+  .fs-h1-accent {
+    @apply bg-gradient-to-r from-white via-red-100 to-zinc-400 bg-clip-text text-transparent;
+    background-size: 200% auto;
+    animation: fs-h1-gradient-shift 14s ease-in-out infinite;
+  }
+
+  .fs-h2 {
+    @apply text-lg font-semibold text-white;
+  }
+
+  .fs-kicker {
+    @apply font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-red-400/85;
+    animation: fs-kicker-breathe 5s ease-in-out infinite;
+  }
+
+  .fs-btn {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200;
+  }
+
+  .fs-btn-ghost {
+    @apply inline-flex items-center justify-center rounded-lg border border-zinc-700/80 bg-zinc-900/50 px-4 py-2 text-sm font-medium text-zinc-200 transition-all duration-300 hover:-translate-y-px hover:border-red-500/45 hover:bg-red-950/35 hover:text-red-100 active:scale-[0.98];
+  }
+
+  .fs-btn-ghost:hover {
+    box-shadow: var(--fs-shadow-glow-sm);
+  }
+
+  .fs-btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg border border-red-400/60 bg-gradient-to-br from-red-500 via-red-600 to-red-800 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-red-950/40 transition-all duration-300 hover:-translate-y-0.5 hover:brightness-110 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60;
+  }
+
+  .fs-btn-primary:hover {
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.35),
+      var(--fs-shadow-glow);
+  }
+
+  .fs-input,
+  .fs-select {
+    @apply w-full rounded-lg border border-zinc-700/80 bg-black/55 px-3 py-2 text-sm text-zinc-100 outline-none transition-[border-color,box-shadow,background-color,transform] duration-200 placeholder:text-zinc-600;
+  }
+
+  .fs-input:hover,
+  .fs-select:hover {
+    @apply border-zinc-600 bg-zinc-950/80;
+  }
+
+  .fs-input:focus,
+  .fs-select:focus {
+    @apply -translate-y-px border-red-500/55 bg-black/70 ring-2 ring-red-500/25;
+  }
+
+  .fs-table-wrap {
+    @apply overflow-x-auto rounded-xl;
+  }
+
+  .fs-table {
+    @apply w-full min-w-[520px] border-collapse text-left text-sm;
+  }
+
+  .fs-table thead th {
+    @apply border-b border-zinc-800/90 bg-gradient-to-b from-zinc-900/95 to-zinc-950/90 px-4 py-3.5 text-xs font-medium uppercase tracking-wider text-zinc-500;
+  }
+
+  /** 竞品目录：中文表头，与排序控件一致 */
+  .fs-table-catalog thead th {
+    @apply normal-case tracking-wide text-zinc-400;
+    animation: fs-th-in 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .fs-table-catalog thead th:nth-child(1) {
+    animation-delay: 0.04s;
+  }
+  .fs-table-catalog thead th:nth-child(2) {
+    animation-delay: 0.09s;
+  }
+  .fs-table-catalog thead th:nth-child(3) {
+    animation-delay: 0.14s;
+  }
+  .fs-table-catalog thead th:nth-child(4) {
+    animation-delay: 0.19s;
+  }
+  .fs-table-catalog thead th:nth-child(5) {
+    animation-delay: 0.24s;
+  }
+
+  .fs-table tbody td {
+    @apply border-b border-zinc-900/80 px-4 py-3 text-zinc-200;
+  }
+
+  .fs-table tbody tr {
+    @apply transition-[colors,transform,box-shadow] duration-200;
+  }
+
+  .fs-table tbody tr:hover {
+    @apply bg-gradient-to-r from-red-950/15 to-transparent;
+    transform: translateX(2px);
+    box-shadow: inset 3px 0 0 rgba(248, 113, 113, 0.45);
+  }
+
+  .fs-table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(1) {
+    animation-delay: 0.03s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(2) {
+    animation-delay: 0.06s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(3) {
+    animation-delay: 0.09s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(4) {
+    animation-delay: 0.12s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(5) {
+    animation-delay: 0.15s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(6) {
+    animation-delay: 0.18s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(7) {
+    animation-delay: 0.21s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(8) {
+    animation-delay: 0.24s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(9) {
+    animation-delay: 0.27s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(10) {
+    animation-delay: 0.3s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(11) {
+    animation-delay: 0.33s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(12) {
+    animation-delay: 0.36s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(13) {
+    animation-delay: 0.39s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(14) {
+    animation-delay: 0.42s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(15) {
+    animation-delay: 0.45s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(16) {
+    animation-delay: 0.48s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(17) {
+    animation-delay: 0.51s;
+  }
+  .fs-table-catalog tbody tr.fs-reveal-child:nth-child(18) {
+    animation-delay: 0.54s;
+  }
+
+  /** 表头可排序链接 */
+  .fs-sort-link {
+    @apply inline-flex items-center gap-1.5 rounded-lg px-2 py-1 -mx-1.5 -my-0.5 text-inherit no-underline transition-all duration-200;
+    @apply text-zinc-400 hover:-translate-y-px hover:bg-red-950/35 hover:text-red-100;
+  }
+
+  .fs-sort-link:focus-visible {
+    @apply outline-none ring-2 ring-red-500/45 ring-offset-2 ring-offset-zinc-950;
+  }
+
+  .fs-sort-link--active {
+    @apply bg-red-950/40 text-red-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)];
+  }
+
+  .fs-sort-link__glyph {
+    @apply inline-flex h-5 min-w-[1.35rem] items-center justify-center rounded-md border border-transparent font-mono text-[10px] text-zinc-500 transition-all duration-200;
+  }
+
+  .fs-sort-link:hover .fs-sort-link__glyph {
+    @apply scale-110 border-red-800/50 bg-red-950/60 text-red-200;
+  }
+
+  .fs-sort-link--active .fs-sort-link__glyph {
+    @apply border-red-800/50 bg-red-950/60 text-red-200;
+  }
+
+  /** 目录结果区顶栏 */
+  .fs-catalog-toolbar {
+    @apply flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800/80 bg-gradient-to-r from-zinc-950/90 via-zinc-950/50 to-transparent px-4 py-3 sm:px-5;
+    animation: fs-toolbar-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .fs-catalog-toolbar-title {
+    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500;
+  }
+
+  /** 统计 / 状态胶囊 */
+  .fs-stat-pill {
+    @apply inline-flex items-center gap-2 rounded-xl border border-zinc-800/90 bg-zinc-950/70 px-3.5 py-2 shadow-inner shadow-black/20 backdrop-blur-sm;
+  }
+
+  .fs-stat-pill__dot {
+    @apply h-2 w-2 shrink-0 rounded-full bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.5)];
+    animation: fs-dot-glow 2.6s ease-in-out infinite;
+  }
+
+  /** 分页区 */
+  .fs-pagination {
+    @apply flex flex-wrap justify-center gap-2 rounded-2xl border border-zinc-800/60 bg-zinc-950/30 px-4 py-3 backdrop-blur-sm;
+    animation: fs-pop-in 0.52s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+  }
+
+  /** 表格内「详情」等次按钮 */
+  .fs-pill-link {
+    @apply inline-flex items-center gap-1 rounded-full border border-red-900/45 bg-red-950/25 px-2.5 py-1 text-xs font-medium text-red-200/95 no-underline transition-all duration-300;
+  }
+
+  .fs-pill-link:hover {
+    @apply -translate-y-px border-red-500/40 bg-red-950/45 text-red-100;
+    box-shadow: var(--fs-shadow-glow-sm);
+  }
+
+  /** 空状态单元格 */
+  .fs-empty-hint {
+    @apply py-16 text-center text-sm text-zinc-500;
+  }
+
+  /** 详情页元信息标签 */
+  .fs-meta-chip {
+    @apply rounded-lg border border-zinc-800/90 bg-gradient-to-b from-zinc-900/80 to-zinc-950/90 px-2.5 py-1 font-mono text-xs text-zinc-300 shadow-inner shadow-black/30;
+  }
+
+  .fs-link {
+    @apply text-red-300 underline-offset-2 transition-all duration-200 hover:-translate-y-px hover:text-red-200 hover:underline;
+  }
+
+  .fs-mono-muted {
+    @apply font-mono text-xs text-zinc-500;
+  }
+
+  /* 统计卡：避免 blur + 无限 background 动画 + 面板大阴影叠在同一次 hover 里导致掉帧 */
+  .fs-stat-card {
+    @apply fs-panel relative overflow-hidden p-5 sm:p-6;
+    contain: paint;
+    isolation: isolate;
+    transition:
+      border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .fs-stat-card:hover {
+    border-color: rgba(127, 29, 29, 0.38);
+    box-shadow:
+      0 20px 45px -14px rgba(0, 0, 0, 0.5),
+      0 0 22px -6px rgba(239, 68, 68, 0.16);
+  }
+
+  .fs-stat-card::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    right: -1.5rem;
+    top: -1.5rem;
+    height: 10rem;
+    width: 10rem;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 35% 35%, rgba(252, 165, 165, 0.22) 0%, rgba(239, 68, 68, 0.08) 38%, transparent 65%);
+    opacity: 0;
+    transform: scale(0.88);
+    transition:
+      opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+
+  .fs-stat-card:hover::after {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .fs-stat-shine {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      118deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.045) 50%,
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity;
+  }
+
+  .fs-stat-card:hover .fs-stat-shine {
+    opacity: 0.65;
+  }
+
+  .fs-cta-card {
+    @apply fs-panel-interactive relative flex flex-col justify-center overflow-hidden p-5 sm:p-6;
+    @apply transition-[transform,box-shadow,border-color] duration-300;
+  }
+
+  .fs-cta-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .fs-cta-card::before {
+    content: "";
+    @apply pointer-events-none absolute inset-0 bg-gradient-to-br from-red-500/5 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100;
+  }
+
+  .fs-rule-row {
+    animation: fs-pop-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .fs-reveal-child {
+    animation: fs-reveal-up 0.64s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /** 检索表单：品牌 / 产品线两列错峰抬起 */
+  .fs-form-stagger > *:nth-child(1) {
+    animation: fs-card-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both;
+  }
+  .fs-form-stagger > *:nth-child(2) {
+    animation: fs-card-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.14s both;
+  }
+
+  /** 多选列表项轻微滑入 */
+  .fs-multi-pick-list > li {
+    animation: fs-li-stagger 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .fs-multi-pick-list > li:nth-child(1) {
+    animation-delay: 0.02s;
+  }
+  .fs-multi-pick-list > li:nth-child(2) {
+    animation-delay: 0.04s;
+  }
+  .fs-multi-pick-list > li:nth-child(3) {
+    animation-delay: 0.06s;
+  }
+  .fs-multi-pick-list > li:nth-child(4) {
+    animation-delay: 0.08s;
+  }
+  .fs-multi-pick-list > li:nth-child(5) {
+    animation-delay: 0.1s;
+  }
+  .fs-multi-pick-list > li:nth-child(6) {
+    animation-delay: 0.12s;
+  }
+  .fs-multi-pick-list > li:nth-child(7) {
+    animation-delay: 0.14s;
+  }
+  .fs-multi-pick-list > li:nth-child(8) {
+    animation-delay: 0.16s;
+  }
+  .fs-multi-pick-list > li:nth-child(9) {
+    animation-delay: 0.18s;
+  }
+  .fs-multi-pick-list > li:nth-child(10) {
+    animation-delay: 0.2s;
+  }
+  .fs-multi-pick-list > li:nth-child(11) {
+    animation-delay: 0.22s;
+  }
+  .fs-multi-pick-list > li:nth-child(12) {
+    animation-delay: 0.24s;
+  }
+
+  .fs-multi-pick {
+    @apply transition-[border-color,box-shadow] duration-300;
+  }
+
+  .fs-multi-pick:hover {
+    box-shadow: 0 0 28px -10px rgba(239, 68, 68, 0.18);
+  }
+
+  .fs-stagger-2 > *:nth-child(1) {
+    animation-delay: 0.04s;
+  }
+  .fs-stagger-2 > *:nth-child(2) {
+    animation-delay: 0.12s;
+  }
+
+  .fs-stagger-3 > *:nth-child(1) {
+    animation-delay: 0.04s;
+  }
+  .fs-stagger-3 > *:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  .fs-stagger-3 > *:nth-child(3) {
+    animation-delay: 0.16s;
+  }
+
+  .fs-stagger-4 > *:nth-child(1) {
+    animation-delay: 0.03s;
+  }
+  .fs-stagger-4 > *:nth-child(2) {
+    animation-delay: 0.08s;
+  }
+  .fs-stagger-4 > *:nth-child(3) {
+    animation-delay: 0.13s;
+  }
+  .fs-stagger-4 > *:nth-child(4) {
+    animation-delay: 0.18s;
+  }
+}
+
+.fs-page-enter {
+  animation: fs-reveal-up 0.58s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fs-page-enter,
+  .fs-header-enter,
+  .fs-nav-enter,
+  .fs-main-enter,
+  .fs-panel-rise,
+  .fs-reveal-child,
+  .fs-rule-row,
+  .fs-grid-bg,
+  .fs-scanline::before,
+  .fs-ambient-orb,
+  .fs-h1-accent,
+  .fs-kicker,
+  .fs-stat-pill__dot,
+  .fs-catalog-toolbar,
+  .fs-pagination,
+  .fs-table-catalog thead th,
+  .fs-table-catalog tbody tr.fs-reveal-child,
+  .fs-form-stagger > *,
+  .fs-multi-pick-list > li {
+    animation: none !important;
+    animation-delay: 0s !important;
+  }
+
+  .fs-h1-accent {
+    background-size: 100% auto;
+  }
+
+  .fs-reveal-child {
+    opacity: 1;
+    transform: none;
+  }
+
+  .fs-rule-row {
+    opacity: 1;
+    transform: none;
+  }
+
+  .fs-header-enter,
+  .fs-nav-enter,
+  .fs-main-enter,
+  .fs-panel-rise {
+    opacity: 1;
+    transform: none;
+  }
+
+  .fs-table tbody tr:hover {
+    transform: none;
+  }
+
+  .fs-cta-card:hover {
+    transform: none;
+  }
+
+  .fs-stat-card,
+  .fs-stat-card::after,
+  .fs-stat-shine {
+    transition: none !important;
+  }
+
+  .fs-stat-card::after,
+  .fs-stat-shine {
+    opacity: 0 !important;
+    transform: none !important;
+  }
+}
