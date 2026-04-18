@@ -9,7 +9,10 @@
     "start": "next start -H 0.0.0.0 -p 3010",
     "start:local": "next start -p 3010",
     "lint": "next lint",
-    "release:lan": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/lan-release.ps1"
+    "release:lan": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/lan-release.ps1",
+    "pack:exe:prepare": "node scripts/prepare-electron-bundle.mjs",
+    "pack:exe:dist": "npm run dist --prefix electron-launcher",
+    "pack:exe": "node scripts/prepare-electron-bundle.mjs && npm run dist --prefix electron-launcher"
   },
   "dependencies": {
     "mongodb": "^6.9.0",

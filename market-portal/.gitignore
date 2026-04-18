@@ -4,3 +4,6 @@ node_modules
 .env.local
 out
 release
+dist-exe
+electron-launcher/bundle
+electron-launcher/node_modules

@@ -1,0 +1,41 @@
+{
+  "name": "market-portal-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "飞神市场洞察 — 内置 Node + Next standalone，无需本机安装 Node",
+  "author": "FEISHEN",
+  "main": "main.cjs",
+  "scripts": {
+    "dist": "node run-dist.cjs"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.feishen.marketportal",
+    "productName": "FeiShenMarketInsight",
+    "copyright": "FEISHEN",
+    "directories": {
+      "output": "../dist-exe"
+    },
+    "files": ["main.cjs", "package.json"],
+    "asar": true,
+    "win": {
+      "target": ["portable"],
+      "artifactName": "FeiShen-MarketInsight-${version}-portable.${ext}",
+      "signAndEditExecutable": false
+    },
+    "extraResources": [
+      {
+        "from": "bundle/node",
+        "to": "node"
+      },
+      {
+        "from": "bundle/next-app",
+        "to": "next-app"
+      }
+    ],
+    "npmRebuild": false
+  }
+}
