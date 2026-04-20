@@ -24,6 +24,19 @@ const nextApp = path.join(bundle, "next-app");
 
 const NODE_VER = process.env.NODE_PORTABLE_VERSION || "20.11.1";
 const NODE_MIRROR = (process.env.NODE_MIRROR || "https://npmmirror.com/mirrors/node").replace(/\/$/, "");
+
+/** 打包脚本内 npm / node-gyp / Electron 下载一律走国内镜像（可被环境变量覆盖） */
+function mirrorEnv() {
+  return {
+    ...process.env,
+    npm_config_registry: process.env.npm_config_registry || "https://registry.npmmirror.com",
+    /** Electron / electron-builder 二进制走 npmmirror（勿写入 .npmrc，避免 npm 警告） */
+    ELECTRON_MIRROR: process.env.ELECTRON_MIRROR || "https://npmmirror.com/mirrors/electron/",
+    ELECTRON_BUILDER_BINARIES_MIRROR:
+      process.env.ELECTRON_BUILDER_BINARIES_MIRROR ||
+      "https://npmmirror.com/mirrors/electron-builder-binaries/",
+  };
+}
 const ZIP_NAME = `node-v${NODE_VER}-win-x64.zip`;
 const ZIP_URL = `${NODE_MIRROR}/v${NODE_VER}/${ZIP_NAME}`;
 const INNER = `node-v${NODE_VER}-win-x64`;
@@ -34,11 +47,7 @@ function run(cmd, args, cwd = root, extraEnv = {}) {
     stdio: "inherit",
     shell: true,
     env: {
-      ...process.env,
-      ELECTRON_MIRROR: process.env.ELECTRON_MIRROR || "https://npmmirror.com/mirrors/electron/",
-      ELECTRON_BUILDER_BINARIES_MIRROR:
-        process.env.ELECTRON_BUILDER_BINARIES_MIRROR ||
-        "https://npmmirror.com/mirrors/electron-builder-binaries/",
+      ...mirrorEnv(),
       ...extraEnv,
     },
   });
@@ -151,7 +160,8 @@ async function main() {
   }
 
   console.log("[pack] 4/4  electron-launcher 依赖安装（npmmirror registry + electron_mirror）…");
-  run("npm", ["install"], launcher);
+  /** 全局 npm 若设置 omit=dev，必须显式包含 devDependencies */
+  run("npm", ["install", "--include=dev", "--no-fund", "--no-audit"], launcher);
 
   console.log("\n[pack] 准备完成。在 market-portal 根目录执行:\n  npm run pack:exe:dist\n将生成 dist-exe 下的 Windows portable exe。\n");
 }
