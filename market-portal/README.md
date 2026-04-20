@@ -1,6 +1,6 @@
 # 市场洞察门户（market-portal）
 
-独立 Next.js 前端：只读浏览 `market-data` 导入的 MongoDB **竞品产品** 数据。
+独立 Next.js 前端：只读浏览 `market-data` 导入的 MongoDB **竞品产品** 数据，与 PLM（`plm-frontend`）无关。
 
 ## 准备
 
