@@ -5,6 +5,14 @@ const fs = require("fs");
 const http = require("http");
 const os = require("os");
 
+/**
+ * Windows 上部分显卡/驱动 + Chromium 会出现「窗口已打开但内容全黑」。
+ * 默认关闭硬件加速；若你确认本机 GPU 正常，可在启动前设置环境变量 FEISHEN_ENABLE_GPU=1 尝试恢复 GPU 加速。
+ */
+if (process.platform === "win32" && process.env.FEISHEN_ENABLE_GPU !== "1") {
+  app.disableHardwareAcceleration();
+}
+
 const PORT = process.env.MARKET_PORTAL_PORT || "3010";
 const START_URL = `http://127.0.0.1:${PORT}`;
 
@@ -172,10 +180,21 @@ function createLoadingWindow() {
     title: "飞神市场洞察",
     backgroundColor: "#030303",
     show: true,
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      /** 避免后台节流导致首屏绘制异常 */
+      backgroundThrottling: false,
     },
+  });
+
+  mainWindow.webContents.on("did-fail-load", (_event, code, desc, url, isMainFrame) => {
+    if (!isMainFrame) return;
+    dialog.showErrorBox(
+      "页面加载失败",
+      `${desc}（代码 ${code}）\n${url}\n\n可查看日志：${nextLogPath()}`,
+    );
   });
 
   const loading =
@@ -223,7 +242,14 @@ if (!gotLock) {
     try {
       await serverBootPromise;
       if (mainWindow && !mainWindow.isDestroyed()) {
-        await mainWindow.loadURL(START_URL);
+        await mainWindow.loadURL(START_URL, {
+          extraHeaders: "pragma: no-cache\ncache-control: no-cache\n",
+        });
+        /** 再等一帧，避免个别环境下 loadURL resolve 后首帧仍为黑 */
+        await new Promise((r) => setTimeout(r, 80));
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.invalidate();
+        }
       }
     } catch (e) {
       const logFile = nextLogPath();
