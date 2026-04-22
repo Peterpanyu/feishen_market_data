@@ -21,22 +21,33 @@ export const metadata: Metadata = {
   description: "飞神集团 · 竞品参数与市场数据",
 };
 
+/** 仅打包 exe 时通过 prepare 脚本注入，减轻 Electron 内全屏动画与 backdrop-blur 带来的卡顿 */
+const desktopShell = process.env.NEXT_PUBLIC_DESKTOP_SHELL === "1";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" className={`${outfit.variable} ${jetbrains.variable}`}>
-      <body className="font-sans antialiased fs-scanline">
+    <html
+      lang="zh-CN"
+      className={`${outfit.variable} ${jetbrains.variable}`}
+      data-desktop-shell={desktopShell ? "1" : undefined}
+    >
+      <body className={`font-sans antialiased ${desktopShell ? "" : "fs-scanline"}`}>
         <div className="fs-shell relative">
-          <div className="fs-ambient" aria-hidden>
-            <div
-              className="fs-ambient-orb -left-20 top-0 h-[min(55vw,420px)] w-[min(55vw,420px)] bg-red-600/20"
-              style={{ animationDelay: "-3s" }}
-            />
-            <div
-              className="fs-ambient-orb bottom-0 right-[-10%] h-[min(60vw,480px)] w-[min(60vw,480px)] bg-zinc-600/15"
-              style={{ animationDelay: "-8s" }}
-            />
-          </div>
-          <div className="pointer-events-none fixed inset-0 -z-10 fs-grid-bg opacity-50" aria-hidden />
+          {!desktopShell ? (
+            <>
+              <div className="fs-ambient" aria-hidden>
+                <div
+                  className="fs-ambient-orb -left-20 top-0 h-[min(55vw,420px)] w-[min(55vw,420px)] bg-red-600/20"
+                  style={{ animationDelay: "-3s" }}
+                />
+                <div
+                  className="fs-ambient-orb bottom-0 right-[-10%] h-[min(60vw,480px)] w-[min(60vw,480px)] bg-zinc-600/15"
+                  style={{ animationDelay: "-8s" }}
+                />
+              </div>
+              <div className="pointer-events-none fixed inset-0 -z-10 fs-grid-bg opacity-50" aria-hidden />
+            </>
+          ) : null}
           <CatalogCompareProvider>
             <SiteHeader />
             <main className="fs-main-enter relative mx-auto max-w-6xl px-4 py-9 pb-24 sm:px-6 sm:py-14 sm:pb-28">

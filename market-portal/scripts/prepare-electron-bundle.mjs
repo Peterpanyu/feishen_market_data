@@ -94,8 +94,8 @@ function extractZip(zipPath, destDir) {
 }
 
 async function main() {
-  console.log("[pack] 1/4  Next.js production build …");
-  run("npm", ["run", "build"], root);
+  console.log("[pack] 1/4  Next.js production build …（NEXT_PUBLIC_DESKTOP_SHELL=1 桌面壳轻量样式）");
+  run("npm", ["run", "build"], root, { NEXT_PUBLIC_DESKTOP_SHELL: "1" });
 
   const standalone = path.join(root, ".next", "standalone");
   if (!fs.existsSync(path.join(standalone, "server.js"))) {

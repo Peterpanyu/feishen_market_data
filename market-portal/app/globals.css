@@ -277,6 +277,33 @@ body {
     @apply bg-zinc-950/90 backdrop-blur-none;
   }
 
+  /**
+   * 桌面壳（NEXT_PUBLIC_DESKTOP_SHELL=1，仅 pack:exe 构建）：关闭大范围模糊与入场 transform，
+   * 去掉装饰层动画，降低 Electron/Chromium 合成开销，缓解滚动与交互卡顿。
+   */
+  html[data-desktop-shell="1"] .fs-main-enter {
+    animation: none;
+    opacity: 1;
+  }
+
+  html[data-desktop-shell="1"] .fs-panel-rise {
+    animation: none;
+    opacity: 1;
+  }
+
+  html[data-desktop-shell="1"] .fs-panel,
+  html[data-desktop-shell="1"] .fs-panel-interactive {
+    @apply backdrop-blur-none;
+  }
+
+  html[data-desktop-shell="1"] header.fs-header-enter {
+    @apply bg-zinc-950/90 backdrop-blur-none;
+  }
+
+  html[data-desktop-shell="1"] .fs-compare-float-bar {
+    @apply bg-zinc-950/95 backdrop-blur-none;
+  }
+
   .fs-panel-inner {
     @apply rounded-xl border border-zinc-800/60 bg-zinc-950/35 transition-[border-color,background-color] duration-200;
   }

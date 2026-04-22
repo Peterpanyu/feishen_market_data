@@ -6,11 +6,17 @@ const http = require("http");
 const os = require("os");
 
 /**
- * Windows 上部分显卡/驱动 + Chromium 会出现「窗口已打开但内容全黑」。
- * 默认关闭硬件加速；若你确认本机 GPU 正常，可在启动前设置环境变量 FEISHEN_ENABLE_GPU=1 尝试恢复 GPU 加速。
+ * 默认开启硬件加速（页面更流畅）。
+ * 若遇「窗口已打开但内容全黑」，可在启动前设置环境变量 FEISHEN_DISABLE_GPU=1 关闭 GPU 加速作为规避。
  */
-if (process.platform === "win32" && process.env.FEISHEN_ENABLE_GPU !== "1") {
+if (process.env.FEISHEN_DISABLE_GPU === "1") {
   app.disableHardwareAcceleration();
+}
+
+/** 减轻切后台/遮挡检测带来的渲染节流与卡顿（Chromium 开关） */
+app.commandLine.appendSwitch("disable-renderer-backgrounding");
+if (process.platform === "win32") {
+  app.commandLine.appendSwitch("disable-features", "CalculateNativeWinOcclusion");
 }
 
 const PORT = process.env.MARKET_PORTAL_PORT || "3010";
@@ -245,11 +251,6 @@ if (!gotLock) {
         await mainWindow.loadURL(START_URL, {
           extraHeaders: "pragma: no-cache\ncache-control: no-cache\n",
         });
-        /** 再等一帧，避免个别环境下 loadURL resolve 后首帧仍为黑 */
-        await new Promise((r) => setTimeout(r, 80));
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.invalidate();
-        }
       }
     } catch (e) {
       const logFile = nextLogPath();

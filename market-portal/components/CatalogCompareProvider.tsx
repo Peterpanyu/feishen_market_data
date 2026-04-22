@@ -163,7 +163,7 @@ export function CatalogCompareProvider({ children }: { children: ReactNode }) {
           role="status"
           aria-live="polite"
         >
-          <div className="pointer-events-auto flex max-w-2xl flex-wrap items-center justify-center gap-2 rounded-2xl border border-red-900/45 bg-zinc-950/95 px-4 py-3 shadow-lg shadow-black/50 backdrop-blur-md sm:gap-3">
+          <div className="fs-compare-float-bar pointer-events-auto flex max-w-2xl flex-wrap items-center justify-center gap-2 rounded-2xl border border-red-900/45 bg-zinc-950/95 px-4 py-3 shadow-lg shadow-black/50 backdrop-blur-md sm:gap-3">
             <span className="text-sm text-zinc-200">
               已选 <span className="font-semibold tabular-nums text-red-200/95">{n}</span> 款
               {n >= COMPARE_MAX ? (
