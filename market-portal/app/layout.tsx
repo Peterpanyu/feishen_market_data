@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
+import { CatalogCompareProvider } from "@/components/CatalogCompareProvider";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -36,10 +37,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             />
           </div>
           <div className="pointer-events-none fixed inset-0 -z-10 fs-grid-bg opacity-50" aria-hidden />
-          <SiteHeader />
-          <main className="fs-main-enter relative mx-auto max-w-6xl px-4 py-9 sm:px-6 sm:py-14">
-            {children}
-          </main>
+          <CatalogCompareProvider>
+            <SiteHeader />
+            <main className="fs-main-enter relative mx-auto max-w-6xl px-4 py-9 pb-24 sm:px-6 sm:py-14 sm:pb-28">
+              {children}
+            </main>
+          </CatalogCompareProvider>
         </div>
       </body>
     </html>

@@ -198,3 +198,15 @@ export async function getProductById(id: string): Promise<MarketProductDoc | nul
   const doc = await col.findOne({ _id: new ObjectId(id) });
   return doc as MarketProductDoc | null;
 }
+
+/** 按 URL 传入顺序返回文档；无效 id 跳过；最多取 8 条以防过大响应 */
+export async function getProductsByIds(ids: string[], max = 8): Promise<MarketProductDoc[]> {
+  const ordered = Array.from(new Set(ids.map((s) => s.trim()).filter(Boolean))).slice(0, max);
+  const oids = ordered.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id));
+  if (oids.length === 0) return [];
+  const client = await getMongoClient();
+  const col = client.db(getMongoDbName()).collection<MarketProductDoc>(getMongoCollectionName());
+  const docs = (await col.find({ _id: { $in: oids } }).toArray()) as MarketProductDoc[];
+  const map = new Map(docs.map((d) => [d._id.toString(), d]));
+  return ordered.map((id) => map.get(id)).filter((d): d is MarketProductDoc => Boolean(d));
+}

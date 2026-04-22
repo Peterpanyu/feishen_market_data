@@ -11,6 +11,8 @@ import {
   productsListQueryString,
 } from "@/lib/listSearchParams";
 import { CatalogSearchForm } from "@/components/CatalogSearchForm";
+import { CompareCheckbox } from "@/components/CompareCheckbox";
+import { CompareSelectAllHeader } from "@/components/CompareSelectAllHeader";
 import { formatDateTimeBeijing } from "@/lib/formatDate";
 
 export const dynamic = "force-dynamic";
@@ -115,6 +117,8 @@ export default async function ProductsPage({ searchParams: sp }: Props) {
 
   const sortHeaderTitle = "点击切换：降序 → 升序 → 恢复默认（录入时间降序）";
 
+  const pageCompareIds = items.map((row) => row._id.toString());
+
   const buildQuery = (over: Partial<{ q: string; page: string }>) => {
     const nextQ = over.q !== undefined ? over.q : qFree ?? "";
     const nextPage = over.page !== undefined ? Math.max(1, parseInt(over.page, 10) || 1) : page;
@@ -170,13 +174,19 @@ export default async function ProductsPage({ searchParams: sp }: Props) {
         <div className="fs-catalog-toolbar">
           <div>
             <p className="fs-catalog-toolbar-title">查询结果</p>
-            <p className="mt-0.5 text-xs text-zinc-600">表头可排序 · 默认按录入时间从新到旧</p>
+            <p className="mt-0.5 text-xs text-zinc-600">
+              表头可排序 · 默认按录入时间从新到旧 · 勾选多条后点底部「参数对比」
+            </p>
           </div>
         </div>
         <div className="fs-table-wrap rounded-none">
           <table className="fs-table fs-table-catalog">
             <thead>
               <tr>
+                <th scope="col" className="w-11 text-center">
+                  <span className="sr-only">加入对比</span>
+                  <CompareSelectAllHeader pageIds={pageCompareIds} />
+                </th>
                 <th
                   scope="col"
                   aria-sort={
@@ -270,7 +280,7 @@ export default async function ProductsPage({ searchParams: sp }: Props) {
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="fs-empty-hint">
+                  <td colSpan={6} className="fs-empty-hint">
                     无匹配记录 — 可放宽品牌 / 产品线或调整检索条件
                   </td>
                 </tr>
@@ -281,6 +291,9 @@ export default async function ProductsPage({ searchParams: sp }: Props) {
                     className="fs-reveal-child"
                     style={{ animationDelay: `${Math.min(i, 12) * 0.03}s` }}
                   >
+                    <td className="text-center align-middle">
+                      <CompareCheckbox productId={row._id.toString()} />
+                    </td>
                     <td className="font-medium text-white">{row.型号}</td>
                     <td>
                       {row.品牌}

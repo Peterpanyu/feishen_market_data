@@ -3,21 +3,12 @@ import { notFound } from "next/navigation";
 import { getProductById } from "@/lib/products";
 import { safeProductsListReturn } from "@/lib/listSearchParams";
 import { formatDateTimeBeijing } from "@/lib/formatDate";
+import { formatSpecValue } from "@/lib/formatSpecValue";
+import { AddToCompareButton } from "@/components/AddToCompareButton";
 
 export const dynamic = "force-dynamic";
 
 type Props = { params: { id: string }; searchParams: { return?: string } };
-
-function formatSpecValue(v: unknown): string {
-  if (v === null || v === undefined) return "";
-  if (typeof v === "string") return v;
-  if (typeof v === "number" || typeof v === "boolean") return String(v);
-  try {
-    return JSON.stringify(v);
-  } catch {
-    return String(v);
-  }
-}
 
 export default async function ProductDetailPage({ params, searchParams }: Props) {
   const { id } = params;
@@ -38,18 +29,21 @@ export default async function ProductDetailPage({ params, searchParams }: Props)
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <Link
-        href={backHref}
-        className="group/back fs-link inline-flex items-center gap-2 rounded-lg py-1 text-sm"
-      >
-        <span
-          className="inline-block transition-transform duration-200 group-hover/back:-translate-x-0.5"
-          aria-hidden
+      <div className="flex flex-wrap items-center gap-4">
+        <Link
+          href={backHref}
+          className="group/back fs-link inline-flex items-center gap-2 rounded-lg py-1 text-sm"
         >
-          ←
-        </span>
-        返回目录
-      </Link>
+          <span
+            className="inline-block transition-transform duration-200 group-hover/back:-translate-x-0.5"
+            aria-hidden
+          >
+            ←
+          </span>
+          返回目录
+        </Link>
+        <AddToCompareButton productId={id} />
+      </div>
 
       <header className="space-y-3 border-b border-zinc-800/60 pb-6">
         <p className="fs-kicker">详情</p>
