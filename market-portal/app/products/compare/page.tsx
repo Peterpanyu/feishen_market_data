@@ -135,14 +135,14 @@ export default async function ComparePage({ searchParams }: Props) {
       {docs.length < 2 ? (
         <div className="fs-panel-interactive p-6 text-sm text-zinc-400">可对比的产品少于 2 款。</div>
       ) : (
-        <div className="fs-panel-interactive fs-panel-rise p-0">
-          <div className="fs-table-wrap">
-            <table className="fs-table fs-table-compare text-sm">
+        <div className="fs-panel-interactive fs-panel--sticky-table p-0">
+          <div className="fs-table-wrap fs-table-wrap--allow-sticky">
+            <table className="fs-table fs-table-compare fs-thead-sticky text-sm">
               <thead>
                 <tr>
                   <th
                     scope="col"
-                    className="sticky left-0 z-30 min-w-[8.5rem] bg-zinc-950/95 shadow-[4px_0_12px_-4px_rgba(0,0,0,0.65)] backdrop-blur-sm"
+                    className="sticky left-0 min-w-[8.5rem] bg-zinc-950/95 shadow-[4px_0_12px_-4px_rgba(0,0,0,0.65)] backdrop-blur-sm"
                   >
                     参数
                   </th>

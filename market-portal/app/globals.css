@@ -12,6 +12,14 @@
   --fs-glow: rgba(239, 68, 68, 0.45);
   --fs-shadow-glow-sm: 0 0 24px -6px rgba(239, 68, 68, 0.25);
   --fs-shadow-glow: 0 0 40px -8px rgba(239, 68, 68, 0.35);
+  /** 与 SiteHeader 高度一致，浮动表头贴在顶栏下方（顶栏 z-50） */
+  --fs-sticky-thead-top: 3.75rem;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --fs-sticky-thead-top: 3.65rem;
+  }
 }
 
 html {
@@ -119,14 +127,13 @@ body {
   }
 }
 
+/** 仅透明度：避免 main 上残留 transform，否则内部 position:sticky 无法相对视口生效 */
 @keyframes fs-main-fade {
   from {
     opacity: 0;
-    transform: translateY(12px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -265,6 +272,11 @@ body {
       var(--fs-shadow-glow-sm);
   }
 
+  /** 内含 thead sticky 的面板：去掉 backdrop-blur，避免部分内核叠层导致表头不随视口粘附 */
+  .fs-panel-interactive.fs-panel--sticky-table {
+    @apply bg-zinc-950/90 backdrop-blur-none;
+  }
+
   .fs-panel-inner {
     @apply rounded-xl border border-zinc-800/60 bg-zinc-950/35 transition-[border-color,background-color] duration-200;
   }
@@ -333,8 +345,24 @@ body {
     @apply overflow-x-auto rounded-xl;
   }
 
+  /**
+   * 与「浮动表头」同用时不要用横向 overflow 容器包住整张表：
+   * Chrome 会在 overflow-x 非 visible 时把 overflow-y 算成 auto，表头 sticky 只能相对该容器，
+   * 容器不纵向滚动 → 页面下拉时表头不会贴在视口上。
+   */
+  .fs-table-wrap.fs-table-wrap--allow-sticky {
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+
   .fs-table {
     @apply w-full min-w-[520px] border-collapse text-left text-sm;
+  }
+
+  /** collapse 下 thead 单元格 sticky 在部分浏览器不可靠 */
+  .fs-table.fs-thead-sticky {
+    border-collapse: separate;
+    border-spacing: 0;
   }
 
   .fs-table thead th {
@@ -398,12 +426,55 @@ body {
 
   .fs-table.fs-table-compare thead {
     position: relative;
-    z-index: 20;
+    z-index: 30;
   }
 
   .fs-table.fs-table-compare tbody {
     position: relative;
     z-index: 10;
+  }
+
+  /**
+   * 浮动表头：纵向滚动时 thead 贴在顶栏下方（与 --fs-sticky-thead-top 对齐）
+   * 需配合：祖先无 transform、表格外层无 overflow-x-auto 包住整表（见 .fs-table-wrap--allow-sticky）
+   */
+  .fs-table.fs-thead-sticky thead th {
+    position: sticky;
+    top: var(--fs-sticky-thead-top);
+    z-index: 25;
+    box-shadow: 0 1px 0 0 rgba(39, 39, 42, 0.95);
+    /* 避免与 border-separate 叠出双边线时发虚 */
+    background-clip: padding-box;
+  }
+
+  .fs-table.fs-thead-sticky thead th:first-child {
+    z-index: 45;
+  }
+
+  .fs-table.fs-thead-sticky.fs-table-compare thead th:first-child {
+    box-shadow:
+      4px 0 12px -4px rgba(0, 0, 0, 0.65),
+      0 1px 0 0 rgba(39, 39, 42, 0.95);
+  }
+
+  /** 规格参数表：禁用 tbody 行 transform，避免破坏 thead sticky */
+  .fs-table.fs-table-spec tbody tr,
+  .fs-table.fs-table-spec tbody tr:hover {
+    transform: none !important;
+    box-shadow: none;
+  }
+
+  .fs-table.fs-table-spec tbody tr:hover {
+    @apply bg-gradient-to-r from-red-950/15 to-transparent;
+  }
+
+  .fs-table.fs-table-spec tbody tr.fs-reveal-child {
+    animation: none;
+    opacity: 1;
+  }
+
+  .fs-table.fs-thead-sticky.fs-table-spec thead th {
+    @apply normal-case tracking-normal text-zinc-400;
   }
 
   .fs-table tbody tr:last-child td {

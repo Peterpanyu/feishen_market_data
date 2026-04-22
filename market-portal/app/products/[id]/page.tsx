@@ -71,21 +71,27 @@ export default async function ProductDetailPage({ params, searchParams }: Props)
 
       <section className="space-y-3">
         <h2 className="fs-h2">规格参数</h2>
-        <div className="fs-panel-interactive fs-panel-rise overflow-hidden p-0">
-          <div className="fs-table-wrap">
-            <table className="fs-table">
+        <div className="fs-panel-interactive fs-panel--sticky-table p-0">
+          <div className="fs-table-wrap fs-table-wrap--allow-sticky">
+            <table className="fs-table fs-thead-sticky fs-table-spec">
+              <thead>
+                <tr>
+                  <th scope="col" className="w-[40%] bg-zinc-950/95 font-mono text-xs text-red-200/80 backdrop-blur-sm">
+                    参数项
+                  </th>
+                  <th scope="col" className="bg-zinc-950/95 text-zinc-400 backdrop-blur-sm">参数值</th>
+                </tr>
+              </thead>
               <tbody>
                 {entries.length === 0 ? (
                   <tr>
-                    <td className="py-10 text-center text-zinc-500">无参数表</td>
+                    <td colSpan={2} className="py-10 text-center text-zinc-500">
+                      无参数表
+                    </td>
                   </tr>
                 ) : (
-                  entries.map(([k, v], i) => (
-                    <tr
-                      key={k}
-                      className="fs-reveal-child"
-                      style={{ animationDelay: `${Math.min(i, 14) * 0.025}s` }}
-                    >
+                  entries.map(([k, v]) => (
+                    <tr key={k}>
                       <td className="w-[40%] font-mono text-xs text-red-200/75">{k}</td>
                       <td className="whitespace-pre-wrap break-words text-zinc-200">{formatSpecValue(v)}</td>
                     </tr>
