@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { countProducts, aggregateByBrand } from "@/lib/products";
+import { ProductsCatalogReturnLink } from "@/components/ProductsCatalogReturnLink";
 
 export const dynamic = "force-dynamic";
 
@@ -57,20 +59,39 @@ export default async function HomePage() {
           </p>
           <p className="mt-2 text-sm text-zinc-500">竞品条数</p>
         </div>
-        <Link href="/products" className="group fs-cta-card fs-reveal-child">
-          <p className="fs-kicker transition-colors duration-300 group-hover:text-red-300">目录</p>
-          <p className="relative mt-2 text-lg font-medium text-white">打开竞品目录</p>
-          <p className="relative mt-1 text-sm text-zinc-500 transition-colors group-hover:text-zinc-400">
-            检索、分页、详情
-          </p>
-          <span
-            className="relative mt-4 inline-flex items-center gap-1 text-sm font-medium text-red-300/90 transition-all duration-300 group-hover:translate-x-1 group-hover:text-red-200"
-            aria-hidden
-          >
-            进入
-            <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
-          </span>
-        </Link>
+        <Suspense
+          fallback={
+            <Link href="/products" className="group fs-cta-card fs-reveal-child">
+              <p className="fs-kicker transition-colors duration-300 group-hover:text-red-300">目录</p>
+              <p className="relative mt-2 text-lg font-medium text-white">打开竞品目录</p>
+              <p className="relative mt-1 text-sm text-zinc-500 transition-colors group-hover:text-zinc-400">
+                检索、分页、详情
+              </p>
+              <span
+                className="relative mt-4 inline-flex items-center gap-1 text-sm font-medium text-red-300/90 transition-all duration-300 group-hover:translate-x-1 group-hover:text-red-200"
+                aria-hidden
+              >
+                进入
+                <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
+              </span>
+            </Link>
+          }
+        >
+          <ProductsCatalogReturnLink className="group fs-cta-card fs-reveal-child">
+            <p className="fs-kicker transition-colors duration-300 group-hover:text-red-300">目录</p>
+            <p className="relative mt-2 text-lg font-medium text-white">打开竞品目录</p>
+            <p className="relative mt-1 text-sm text-zinc-500 transition-colors group-hover:text-zinc-400">
+              检索、分页、详情
+            </p>
+            <span
+              className="relative mt-4 inline-flex items-center gap-1 text-sm font-medium text-red-300/90 transition-all duration-300 group-hover:translate-x-1 group-hover:text-red-200"
+              aria-hidden
+            >
+              进入
+              <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
+            </span>
+          </ProductsCatalogReturnLink>
+        </Suspense>
       </div>
 
       <section className="fs-stagger-3 space-y-4">

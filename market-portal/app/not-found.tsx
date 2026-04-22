@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { ProductsCatalogReturnLink } from "@/components/ProductsCatalogReturnLink";
 
 export default function NotFound() {
   return (
@@ -10,9 +12,9 @@ export default function NotFound() {
         <h1 className="fs-h1 fs-h1-accent text-xl">页面不存在</h1>
         <p className="mt-2 text-sm leading-relaxed text-zinc-500">链接可能已失效，或资源已被移除。</p>
       </div>
-      <Link href="/products" className="fs-btn-primary">
-        竞品目录
-      </Link>
+      <Suspense fallback={<Link href="/products" className="fs-btn-primary">竞品目录</Link>}>
+        <ProductsCatalogReturnLink className="fs-btn-primary">竞品目录</ProductsCatalogReturnLink>
+      </Suspense>
     </div>
   );
 }

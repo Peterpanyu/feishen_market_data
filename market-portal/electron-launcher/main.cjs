@@ -1,5 +1,5 @@
 const { app, BrowserWindow, dialog } = require("electron");
-const { spawn } = require("child_process");
+const { spawn, spawnSync } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const http = require("http");
@@ -167,13 +167,24 @@ function startNextServer() {
 }
 
 function stopNextServer() {
-  if (serverProcess && !serverProcess.killed) {
-    try {
-      serverProcess.kill();
-    } catch {
-      /* ignore */
+  if (!serverProcess) return;
+  const proc = serverProcess;
+  const pid = proc.pid;
+  serverProcess = null;
+
+  try {
+    if (process.platform === "win32" && pid) {
+      /** /T 结束整棵进程树，关闭 exe 时一并结束内置 Node 与 Next 监听（避免 3010 残留） */
+      spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {
+        stdio: "ignore",
+        windowsHide: true,
+        shell: false,
+      });
+    } else if (!proc.killed) {
+      proc.kill("SIGTERM");
     }
-    serverProcess = null;
+  } catch {
+    /* ignore */
   }
 }
 
@@ -261,11 +272,18 @@ if (!gotLock) {
   });
 
   app.on("window-all-closed", () => {
+    isQuiting = true;
     stopNextServer();
     app.quit();
   });
 
   app.on("before-quit", () => {
+    isQuiting = true;
+    stopNextServer();
+  });
+
+  /** 最后兜底：确保退出时子进程已结束 */
+  app.on("will-quit", () => {
     isQuiting = true;
     stopNextServer();
   });

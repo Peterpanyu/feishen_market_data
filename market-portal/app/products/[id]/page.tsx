@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProductById } from "@/lib/products";
-import { safeProductsListReturn } from "@/lib/listSearchParams";
 import { formatDateTimeBeijing } from "@/lib/formatDate";
 import { formatSpecValue } from "@/lib/formatSpecValue";
 import { AddToCompareButton } from "@/components/AddToCompareButton";
+import { DetailBackToCatalog } from "@/components/DetailBackToCatalog";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +11,6 @@ type Props = { params: { id: string }; searchParams: { return?: string } };
 
 export default async function ProductDetailPage({ params, searchParams }: Props) {
   const { id } = params;
-  const backHref = safeProductsListReturn(searchParams.return);
   let doc = null;
   try {
     doc = await getProductById(id);
@@ -30,8 +28,8 @@ export default async function ProductDetailPage({ params, searchParams }: Props)
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <div className="flex flex-wrap items-center gap-4">
-        <Link
-          href={backHref}
+        <DetailBackToCatalog
+          returnRaw={searchParams.return}
           className="group/back fs-link inline-flex items-center gap-2 rounded-lg py-1 text-sm"
         >
           <span
@@ -41,7 +39,7 @@ export default async function ProductDetailPage({ params, searchParams }: Props)
             ←
           </span>
           返回目录
-        </Link>
+        </DetailBackToCatalog>
         <AddToCompareButton productId={id} />
       </div>
 

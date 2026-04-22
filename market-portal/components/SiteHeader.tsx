@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { SiteNav } from "@/components/SiteNav";
 
@@ -22,7 +23,9 @@ export function SiteHeader() {
             <BrandLogo />
           </span>
         </Link>
-        <SiteNav />
+        <Suspense fallback={<div className="h-10 w-[min(100%,18rem)] shrink-0 rounded-xl bg-zinc-900/40" aria-hidden />}>
+          <SiteNav />
+        </Suspense>
       </div>
     </header>
   );

@@ -4,6 +4,7 @@
 
 import type { ListSortKey } from "./listSortKey";
 import { isListSortKey } from "./listSortKey";
+import { isSafeCatalogListPath } from "./catalogLastPath";
 
 /** 单条字段条件（多条件 AND 时用多行） */
 export type SearchRuleRow = {
@@ -258,7 +259,7 @@ export function buildProductsListPath(o: {
   return qs ? `/products?${qs}` : "/products";
 }
 
-/** 仅允许站内相对路径，防止开放重定向 */
+/** 仅允许站内竞品目录路径（/products 或 /products?…），防止开放重定向 */
 export function safeProductsListReturn(raw: string | undefined): string {
   if (!raw || typeof raw !== "string") return "/products";
   let path: string;
@@ -267,7 +268,6 @@ export function safeProductsListReturn(raw: string | undefined): string {
   } catch {
     return "/products";
   }
-  if (!path.startsWith("/products")) return "/products";
-  if (path.startsWith("//") || path.includes("://")) return "/products";
+  if (!isSafeCatalogListPath(path)) return "/products";
   return path;
 }

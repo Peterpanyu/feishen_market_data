@@ -18,6 +18,7 @@ import {
   writeCompareIdsToStorage,
   COMPARE_CHANGED_EVENT,
 } from "@/lib/compareSelectionShared";
+import { readLastCatalogPath } from "@/lib/catalogLastPath";
 
 type Ctx = {
   ids: string[];
@@ -152,7 +153,13 @@ export function CatalogCompareProvider({ children }: { children: ReactNode }) {
   );
 
   const n = ids.length;
-  const compareHref = buildCompareHref(ids);
+  const compareHref = useMemo(() => {
+    const base = buildCompareHref(ids);
+    const ret = readLastCatalogPath();
+    const extra = `return=${encodeURIComponent(ret)}`;
+    if (base.includes("?")) return `${base}&${extra}`;
+    return `${base}?${extra}`;
+  }, [ids]);
 
   return (
     <CatalogCompareContext.Provider value={value}>

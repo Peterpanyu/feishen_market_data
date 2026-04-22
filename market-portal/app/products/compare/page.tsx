@@ -1,13 +1,20 @@
-import Link from "next/link";
 import { getProductsByIds } from "@/lib/products";
 import { formatSpecValue } from "@/lib/formatSpecValue";
 import { formatDateTimeBeijing } from "@/lib/formatDate";
 import { COMPARE_MAX } from "@/lib/compareSelectionShared";
 import type { MarketProductDoc } from "@/lib/types";
+import { DetailBackToCatalog } from "@/components/DetailBackToCatalog";
 
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Record<string, string | string[] | undefined> };
+
+function pickCatalogReturnParam(sp: Record<string, string | string[] | undefined>): string | undefined {
+  const r = sp.return;
+  if (typeof r === "string") return r.trim() || undefined;
+  if (Array.isArray(r)) return r[0]?.trim() || undefined;
+  return undefined;
+}
 
 function parseIdsFromSearchParams(sp: Record<string, string | string[] | undefined>): string[] {
   const rawIds = sp.ids;
@@ -61,6 +68,7 @@ function collectSpecKeys(docs: MarketProductDoc[]): string[] {
 }
 
 export default async function ComparePage({ searchParams }: Props) {
+  const catalogReturnRaw = pickCatalogReturnParam(searchParams);
   const idList = parseIdsFromSearchParams(searchParams);
   let error: string | null = null;
   let docs: MarketProductDoc[] = [];
@@ -77,9 +85,9 @@ export default async function ComparePage({ searchParams }: Props) {
         <p className="fs-kicker text-red-300/90">对比加载失败</p>
         <p className="mt-2 text-sm leading-relaxed text-red-100/90">{error}</p>
         <p className="mt-3 text-sm">
-          <Link href="/products" className="fs-link">
+          <DetailBackToCatalog returnRaw={catalogReturnRaw} className="fs-link">
             返回竞品目录
-          </Link>
+          </DetailBackToCatalog>
         </p>
       </div>
     );
@@ -98,9 +106,9 @@ export default async function ComparePage({ searchParams }: Props) {
         <div className="fs-panel-interactive fs-panel-rise p-5 text-sm text-zinc-400">
           <p>当前链接中有效产品不足 2 款。请从目录勾选至少 2 条记录，或使用下方链接返回。</p>
           <p className="mt-4">
-            <Link href="/products" className="fs-link">
+            <DetailBackToCatalog returnRaw={catalogReturnRaw} className="fs-link">
               前往竞品目录
-            </Link>
+            </DetailBackToCatalog>
           </p>
         </div>
       </div>
@@ -120,9 +128,9 @@ export default async function ComparePage({ searchParams }: Props) {
             共 <span className="tabular-nums text-zinc-300">{docs.length}</span> 款；主档信息与规格参数并排对照。
           </p>
         </header>
-        <Link href="/products" className="fs-btn-ghost shrink-0 text-sm">
+        <DetailBackToCatalog returnRaw={catalogReturnRaw} className="fs-btn-ghost shrink-0 text-sm">
           ← 返回目录
-        </Link>
+        </DetailBackToCatalog>
       </div>
 
       {missing.length > 0 ? (
