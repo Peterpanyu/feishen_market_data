@@ -22,6 +22,7 @@ import argparse
 import csv
 import hashlib
 import json
+import math
 import re
 import os
 import sys
@@ -349,6 +350,158 @@ def build_documents_from_unified_csv(
     return docs
 
 
+# 主档专用列：其余列原样进入「规格参数」，不改表头、不拼单位、不把数值改成中文描述
+_NATIVE_RESERVED_TOP: frozenset[str] = frozenset(
+    {"品牌", "品牌中文名", "型号", "产品线", "产业线", "原始来源文件"}
+)
+
+
+def _native_pick_product_line(row: dict[str, str]) -> str:
+    for k in ("产品线", "产业线"):
+        v = (row.get(k) or "").strip()
+        if v:
+            return v
+    return ""
+
+
+_BOOL_TRUE: frozenset[str] = frozenset({"true", "yes", "y", "是", "真", "on", "t"})
+_BOOL_FALSE: frozenset[str] = frozenset({"false", "no", "n", "否", "假", "off", "f"})
+# 纯数字 0/1 由 _native_try_number 解析为 int；「TRUE/FALSE」等走布尔
+
+
+def _native_try_bool(s: str) -> bool | None:
+    t = s.strip().lower()
+    if t in _BOOL_TRUE:
+        return True
+    if t in _BOOL_FALSE:
+        return False
+    return None
+
+
+def _native_try_number(s: str) -> int | float | None:
+    t = s.replace(",", "").strip()
+    if not t or t.lower() == "nan":
+        return None
+    try:
+        if re.fullmatch(r"-?\d+", t):
+            return int(t)
+        x = float(t)
+        if not math.isfinite(x):
+            return None
+        if abs(x - round(x)) < 1e-12:
+            return int(round(x))
+        return x
+    except ValueError:
+        return None
+
+
+_NUMERIC_HEADER_SUFFIXES: tuple[str, ...] = (
+    "_RMB",
+    "_kW",
+    "_Nm",
+    "_kmh",
+    "_km",
+    "_V",
+    "_Wh",
+    "_h",
+    "_kg",
+    "_mm",
+    "_%",
+    "_cm",
+)
+
+
+def _native_header_suggests_number(key: str) -> bool:
+    """列名含工程单位后缀时，辅助判断该列应以数值为主（仍优先按单元格内容解析）。"""
+    k = (key or "").strip()
+    return any(k.endswith(suf) for suf in _NUMERIC_HEADER_SUFFIXES)
+
+
+def _native_strip_trailing_unit(s: str, key: str) -> str:
+    """若内容形如「72V」「50 %」而列名已带单位，去掉冗余单位再尝试解析为数字。"""
+    t = s.strip()
+    if not t:
+        return t
+    if key.endswith("_V") and re.fullmatch(r"-?\d+(\.\d+)?\s*[vV]", t):
+        return re.sub(r"\s*[vV]\s*$", "", t).strip()
+    if key.endswith("_%") and re.fullmatch(r"-?\d+(\.\d+)?\s*%", t):
+        return re.sub(r"\s*%\s*$", "", t).strip()
+    return t
+
+
+def _native_coerce_cell(raw: str, *, header_key: str = "") -> Any:
+    """按单元格内容推断 BSON 类型；列名带单位后缀时在内容略模糊时辅助解析为数字。"""
+    s = (raw or "").strip()
+    if not s:
+        return None
+    s = repair_common_mojibake(s)
+    n = _native_try_number(s)
+    if n is not None:
+        return n
+    if _native_header_suggests_number(header_key):
+        t2 = _native_strip_trailing_unit(s, header_key)
+        if t2 != s:
+            n2 = _native_try_number(t2)
+            if n2 is not None:
+                return n2
+    b = _native_try_bool(s)
+    if b is not None:
+        return b
+    return s
+
+
+def build_documents_from_native_csv(
+    *,
+    csv_path: Path,
+    encoding: str | None = None,
+) -> list[dict[str, Any]]:
+    """任意表头 CSV：列名原样写入规格参数；单元格按内容推断 int / float / bool / str。"""
+    if encoding:
+        rows = read_csv_rows(csv_path, encoding)
+    else:
+        rows = read_csv_rows_try_encodings(csv_path, "utf-8-sig", "utf-8", "gb18030", "cp936")
+    now = datetime.now(timezone.utc)
+    docs: list[dict[str, Any]] = []
+    for row in rows:
+        model = normalize_canonical_model(row.get("型号") or "")
+        if not model:
+            continue
+        brand = (row.get("品牌") or "").strip() or "未知"
+        line = _native_pick_product_line(row) or 产品线值_电动摩托车
+        source = (row.get("原始来源文件") or "").strip() or csv_path.name
+        specs: dict[str, Any] = {}
+        warnings: list[str] = []
+        for k_raw, v_raw in row.items():
+            key = _strip_key(k_raw)
+            if not key or key in _NATIVE_RESERVED_TOP:
+                continue
+            if v_raw is None:
+                continue
+            val = str(v_raw).strip()
+            if not val:
+                continue
+            coerced = _native_coerce_cell(val, header_key=key)
+            if coerced is None:
+                continue
+            specs[key] = coerced
+        rh = row_hash(source, brand, model, specs)
+        doc: dict[str, Any] = {
+            F产品线: line,
+            F品牌: brand,
+            F规格参数: specs,
+            F来源文件: source,
+            F数据指纹: rh,
+            F导入时间: now,
+            F解析警告: warnings,
+            F型号: model,
+        }
+        bl = (row.get("品牌中文名") or "").strip()
+        if bl:
+            doc[F品牌中文名] = bl
+        docs.append(doc)
+    return docs
+
+
 def row_hash(source_file: str, brand: str, model: str, specs: dict[str, Any]) -> str:
     payload = json.dumps(
         {F来源文件: source_file, F品牌: brand, F型号: model, F规格参数: specs},
@@ -469,9 +622,10 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument(
         "--csv-format",
-        choices=("unified", "standardized_v7"),
+        choices=("unified", "standardized_v7", "native"),
         default="unified",
-        help="unified=clean_csv 汇总表；standardized_v7=cleaned_ebike_standardized 系列结构化表",
+        help="unified=clean_csv 汇总表；standardized_v7=cleaned_ebike_standardized；"
+        "native=表头原样写入规格参数（不改列名与单元格格式）",
     )
     p.add_argument(
         "--drop-entire-database",
@@ -527,6 +681,9 @@ def main() -> int:
         if args.csv_format == "standardized_v7":
             all_docs = build_documents_from_standardized_v7_csv(csv_path=csv_path, encoding=enc)
             print(f"{csv_path.name}: {len(all_docs)} 条（standardized_v7）")
+        elif args.csv_format == "native":
+            all_docs = build_documents_from_native_csv(csv_path=csv_path, encoding=enc)
+            print(f"{csv_path.name}: {len(all_docs)} 条（native 原表头）")
         else:
             all_docs = build_documents_from_unified_csv(csv_path=csv_path, encoding=enc)
             print(f"{csv_path.name}: {len(all_docs)} 条（统一表头）")

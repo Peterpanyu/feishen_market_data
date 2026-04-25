@@ -6,7 +6,7 @@
 
 ```powershell
 cd market-data
-pip install -r requirements.txt
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host pypi.tuna.tsinghua.edu.cn
 copy .env.example .env
 ```
 
@@ -44,6 +44,35 @@ py import_market_csv.py --legacy-from-dir "C:\Users\panyu\Desktop\py"
 数据写入集合 **`竞品产品`**（可用环境变量 `MARKET_PRODUCTS_COLLECTION` 覆盖）。
 
 浏览数据可使用同级 **`../market-portal`**（见该目录 `README.md`）。
+
+## 从 Excel（我司电摩汇总等）导入
+
+表头尽量与 `clean/schema.py` 中 `CANONICAL_COLUMNS` 一致；多出来的列会写入每行的 **`其它列_JSON`**。首行表头、以下为数据；未指定 `--sheet` 时自动选用**数据行最多**的工作表。
+
+```powershell
+py import_company_xlsx.py --input "C:\Users\panyu\Desktop\我司电摩数据汇总.xlsx"
+py import_company_xlsx.py --input "..." --dry-run
+py import_company_xlsx.py --input "..." --csv-only
+```
+
+脚本会生成 `data/cleaned/<文件名>_统一.csv`，再调用 **`import_market_csv.py`**（默认仍为统一表头规则）。  
+若 Excel 里已是「我司」宽表列名，请**另存为 CSV** 后用下面 **native** 方式导入，避免改列名或改单元格格式。
+
+### 原表头 CSV（不改列名、不改单元格内容）
+
+主档仅识别：**品牌**、**型号**、**产品线** 或 **产业线**（二选一填产品线）、**品牌中文名**、**原始来源文件**（可空，空则用 CSV 文件名作来源）；**其余列**全部写入 **`规格参数`**（**新增表头无需改代码**）。单元格按内容推断 **整数 / 浮点数 / 布尔**；列名带 `_kW`、`_mm`、`_V`、`_Wh`、`_%` 等后缀时，若写成 `72V`、`50%` 也会尽量解析为数字（与 `clean_csv` 汇总表头无关）。
+
+```powershell
+py import_market_csv.py --csv "C:\Users\panyu\Desktop\我司电摩数据汇总.csv" --csv-format native
+py import_market_csv.py --csv "..." --csv-format native --dry-run
+```
+
+### 表头与产品线对齐（仅适用于要并入库内「统一宽表」时）
+
+若源表缺少列或产品线写成「越野电摩」等，可先规范再按 **unified** 导入::
+
+    py normalize_unified_csv.py --input "C:\...\某表.csv"
+    py import_market_csv.py --csv "data\cleaned\某表_竞品统一.csv"
 
 ## 历史英文键 / 枚举中文化迁移
 
